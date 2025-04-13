@@ -1,0 +1,20 @@
+[
+  {
+    "firstName": "Patient",
+    "lastName": "One",
+    "email": "patientone@example.com",
+    "dateOfBirth": "1985-06-12"
+  },
+  {
+    "firstName": "Patient",
+    "lastName": "Two",
+    "email": "patienttwo@example.com",
+    "dateOfBirth": "1979-11-23"
+  },
+  {
+    "firstName": "Patient",
+    "lastName": "Three",
+    "email": "patientthree@example.com",
+    "dateOfBirth": "1992-01-04"
+  }
+]
