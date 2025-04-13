@@ -1,21 +1,34 @@
 'use client';
 
+import { useState } from 'react';
 import { api } from '@lutra/trpc/react';
 import PatientCard from '../PatientCard/PatientCard';
+import PatientModal from '../PatientModal/PatientModal';
 
 const PatientsDisplay = () => {
   const { data: patients, isLoading } = api.patients.list.useQuery();
+  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
   if (isLoading) return <p>Loading patients...</p>;
   if (!patients || patients.length === 0)
     return <p className="text-gray-500">No patients found.</p>;
 
   return (
-    <div className="grid grid-cols-1 gap-4 pb-1 sm:grid-cols-2 lg:grid-cols-3">
-      {patients.map((patient) => (
-        <PatientCard key={patient.id} patient={patient} />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-1 gap-4 pb-1 sm:grid-cols-2 lg:grid-cols-3">
+        {patients.map((patient) => (
+          <PatientCard
+            key={patient.id}
+            patient={patient}
+            onClick={() => setSelectedPatientId(patient.id)}
+          />
+        ))}
+      </div>
+
+      {selectedPatientId !== null && (
+        <PatientModal id={selectedPatientId} onClose={() => setSelectedPatientId(null)} />
+      )}
+    </>
   );
 };
 
