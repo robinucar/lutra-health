@@ -10,7 +10,7 @@ export const appointmentsRouter = createTRPCRouter({
 		.input(z.object({ patientId: z.number() }))
 		.query(async ({ input }) => {
 			return await db.query.appointments.findMany({
-				where: (apt, { eq }) => eq(apt.patientId, input.patientId),
+				where: (appt, { eq }) => eq(appt.patientId, input.patientId),
 			});
 		}),
 

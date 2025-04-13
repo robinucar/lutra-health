@@ -1,8 +1,12 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '@lutra/trpc/react';
-import { useEffect, useMemo } from 'react';
+import { appointmentStatusEnum } from '../../../server/db/schema';
 import Loading from '../Loading/Loading';
+import PatientInfo from './PatientInfo/PatientInfo';
+import AppointmentList from './AppointmentList/AppointmentList';
+import AppointmentForm from './AppointmentForm/AppointmentForm';
 
 type PatientModalProps = {
 	id: number;
@@ -11,8 +15,44 @@ type PatientModalProps = {
 
 const PatientModal = ({ id, onClose }: PatientModalProps) => {
 	const { data: patient, isLoading } = api.patients.get.useQuery({ id });
+	const { data: appointments, isLoading: appointmentsLoading } =
+		api.appointments.getByPatientId.useQuery({ patientId: id });
 
-	// Close modal on when user clicks ESC key
+	const utils = api.useUtils();
+
+	const createAppointment = api.appointments.create.useMutation({
+		onSuccess: async () => {
+			await utils.appointments.getByPatientId.invalidate({ patientId: id });
+			resetForm();
+		},
+	});
+
+	const [form, setForm] = useState<{
+		scheduledFor: string;
+		status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+		reason: string;
+		notes: string;
+	}>({
+		scheduledFor: '',
+		status: 'SCHEDULED',
+		reason: '',
+		notes: '',
+	});
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+		setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+	};
+
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!form.reason || !form.scheduledFor) return;
+		createAppointment.mutate({ ...form, patientId: id });
+	};
+
+	const resetForm = () => {
+		setForm({ scheduledFor: '', status: 'SCHEDULED', reason: '', notes: '' });
+	};
+
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') onClose();
@@ -21,15 +61,12 @@ const PatientModal = ({ id, onClose }: PatientModalProps) => {
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [onClose]);
 
-	// Format patients date of birth
 	const formattedDate = useMemo(() => {
 		if (!patient?.dateOfBirth) return 'N/A';
 		return new Date(patient.dateOfBirth).toLocaleDateString('en-GB');
 	}, [patient]);
 
-	// Loading patients details
-	if (isLoading) return <Loading message="Loading patients details..." />;
-
+	if (isLoading) return <Loading message="Loading patient details..." />;
 	if (!patient) return null;
 
 	return (
@@ -40,23 +77,24 @@ const PatientModal = ({ id, onClose }: PatientModalProps) => {
 			aria-modal="true"
 			aria-labelledby="patient-modal-title"
 		>
-			{/* Modal content: prevent click bubbling */}
 			<div
 				onClick={(e) => e.stopPropagation()}
-				className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl"
+				className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl overflow-y-auto max-h-[90vh]"
 			>
-				<h2 id="patient-modal-title" className="text-xl font-bold mb-2">
-					{patient.firstName} {patient.lastName}
-				</h2>
-				<p className="text-sm text-gray-700 mb-2">
-					<strong>Email:</strong> {patient.email ?? 'N/A'}
-				</p>
-				<p className="text-sm text-gray-700 mb-4">
-					<strong>Date of Birth:</strong> {formattedDate}
-				</p>
+				<PatientInfo patient={patient} formattedDate={formattedDate} />
+				<AppointmentList
+					appointments={appointments}
+					isLoading={appointmentsLoading}
+				/>
+				<AppointmentForm
+					form={form}
+					onChange={handleChange}
+					onSubmit={handleSubmit}
+					enumValues={appointmentStatusEnum.enumValues}
+				/>
 				<button
 					onClick={onClose}
-					className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+					className="mt-4 w-full px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
 				>
 					Close
 				</button>
