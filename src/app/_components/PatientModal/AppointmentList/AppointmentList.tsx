@@ -1,14 +1,30 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import { appointments } from '../../../../server/db/schema';
+import type { JSX } from 'react';
 
 type Appointment = InferSelectModel<typeof appointments>;
 
 type AppointmentListProps = {
+	/**
+	 * Array of appointment records to display.
+	 */
 	appointments?: Appointment[];
+
+	/**
+	 * Whether the appointment list is currently loading.
+	 */
 	isLoading: boolean;
 };
 
-const AppointmentList = ({ appointments, isLoading }: AppointmentListProps) => {
+/**
+ * Displays a list of appointments with status, date/time, reason, and optional notes.
+ * Shows a loading message or fallback if no appointments are available.
+ *
+ * @component
+ * @param {AppointmentListProps} props - Component props
+ * @returns {JSX.Element} The rendered appointment list
+ */
+const AppointmentList = ({ appointments, isLoading }: AppointmentListProps): JSX.Element => {
 	return (
 		<div className="mb-4">
 			<h3 className="font-semibold mb-2">Appointments</h3>

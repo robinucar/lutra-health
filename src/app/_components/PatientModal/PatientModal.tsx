@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type JSX } from 'react';
 import { api } from '@lutra/trpc/react';
 import { appointmentStatusEnum } from '../../../server/db/schema';
 import Loading from '../Loading/Loading';
@@ -9,11 +9,29 @@ import AppointmentList from './AppointmentList/AppointmentList';
 import AppointmentForm from './AppointmentForm/AppointmentForm';
 
 type PatientModalProps = {
+	/**
+	 * ID of the patient whose details and appointments are being displayed
+	 */
 	id: number;
+
+	/**
+	 * Function to close the modal
+	 */
 	onClose: () => void;
 };
 
-const PatientModal = ({ id, onClose }: PatientModalProps) => {
+/**
+ * Modal component to view a patient's information and manage their appointments.
+ * Includes:
+ * - Patient basic info
+ * - Existing appointments list
+ * - Appointment creation form
+ *
+ * @component
+ * @param {PatientModalProps} props - Props including patient ID and close handler
+ * @returns {JSX.Element | null}
+ */
+const PatientModal = ({ id, onClose }: PatientModalProps): JSX.Element | null => {
 	const { data: patient, isLoading } = api.patients.get.useQuery({ id });
 	const { data: appointments, isLoading: appointmentsLoading } =
 		api.appointments.getByPatientId.useQuery({ patientId: id });
@@ -27,6 +45,9 @@ const PatientModal = ({ id, onClose }: PatientModalProps) => {
 		},
 	});
 
+	/**
+	 * Form state for creating a new appointment
+	 */
 	const [form, setForm] = useState<{
 		scheduledFor: string;
 		status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
@@ -39,20 +60,34 @@ const PatientModal = ({ id, onClose }: PatientModalProps) => {
 		notes: '',
 	});
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+	/**
+	 * Handle changes to form fields
+	 */
+	const handleChange = (
+		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+	) => {
 		setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 	};
 
+	/**
+	 * Submit form to create a new appointment
+	 */
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!form.reason || !form.scheduledFor) return;
 		createAppointment.mutate({ ...form, patientId: id });
 	};
 
+	/**
+	 * Reset the form to initial state
+	 */
 	const resetForm = () => {
 		setForm({ scheduledFor: '', status: 'SCHEDULED', reason: '', notes: '' });
 	};
 
+	/**
+	 * Close modal when user presses Escape
+	 */
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') onClose();
@@ -61,6 +96,9 @@ const PatientModal = ({ id, onClose }: PatientModalProps) => {
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [onClose]);
 
+	/**
+	 * Format patient's date of birth as DD/MM/YYYY
+	 */
 	const formattedDate = useMemo(() => {
 		if (!patient?.dateOfBirth) return 'N/A';
 		return new Date(patient.dateOfBirth).toLocaleDateString('en-GB');

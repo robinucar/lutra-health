@@ -2,15 +2,30 @@
 
 import type { InferSelectModel } from 'drizzle-orm';
 import { patients } from '../../../server/db/schema';
+import type { JSX } from 'react';
 
 type Patient = InferSelectModel<typeof patients>;
 
 interface PatientCardProps {
+  /**
+   * The patient object to display in the card.
+   */
   patient: Patient;
-  onClick?: () => void; // ✅ make click handler optional
+
+  /**
+   * Optional click handler (e.g. to open a modal).
+   */
+  onClick?: () => void;
 }
 
-const PatientCard = ({ patient, onClick }: PatientCardProps) => {
+/**
+ * Renders a clickable card displaying a patient's basic information.
+ *
+ * @component
+ * @param {PatientCardProps} props - The component props
+ * @returns {JSX.Element} A styled patient card with name and email
+ */
+const PatientCard = ({ patient, onClick }: PatientCardProps): JSX.Element => {
   return (
     <div
       onClick={onClick}
