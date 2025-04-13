@@ -2,6 +2,7 @@
 
 import { api } from '@lutra/trpc/react';
 import { useEffect, useMemo } from 'react';
+import Loading from '../Loading/Loading';
 
 type PatientModalProps = {
 	id: number;
@@ -27,20 +28,7 @@ const PatientModal = ({ id, onClose }: PatientModalProps) => {
 	}, [patient]);
 
 	// Loading patients details
-	if (isLoading) {
-		return (
-			<div
-				className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-200"
-				role="dialog"
-				aria-modal="true"
-				aria-labelledby="patient-modal-title"
-			>
-				<div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
-					<p className="text-gray-500">Loading patient details...</p>
-				</div>
-			</div>
-		);
-	}
+	if (isLoading) return <Loading message="Loading patients details..." />;
 
 	if (!patient) return null;
 
