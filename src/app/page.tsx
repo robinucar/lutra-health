@@ -1,6 +1,7 @@
 import { HydrateClient, api } from "@lutra/trpc/server";
 
 import { InstructionBanner } from "./_components/instruction-banner";
+import PatientsDisplay from "./_components/PatientsDisplay/PatientsDisplay";
 
 export default async function Home() {
 	const greeting = await api.hello.greeting();
@@ -64,6 +65,9 @@ export default async function Home() {
 								</div>
 							))}
 						</div>
+					</div>
+					<div className="mt-6">
+						<PatientsDisplay />
 					</div>
 				</main>
 			</div>
