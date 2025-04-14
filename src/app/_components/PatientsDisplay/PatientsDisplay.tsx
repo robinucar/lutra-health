@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type JSX } from 'react';
 import { api } from '@lutra/trpc/react';
 import PatientCard from '../PatientCard/PatientCard';
 import PatientModal from '../PatientModal/PatientModal';
@@ -19,7 +19,7 @@ import Loading from '../Loading/Loading';
  *
  * @returns {JSX.Element} A grid of patient cards with optional modal detail view
  */
-const PatientsDisplay = () => {
+const PatientsDisplay = (): JSX.Element => {
   const { data: patients, isLoading } = api.patients.list.useQuery();
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
